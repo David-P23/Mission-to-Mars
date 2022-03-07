@@ -11,7 +11,7 @@ import datetime as dt
 def scrape_all():
 
     # Initiate headless driver for deployment
-    executable_path = {'executable_path': '/usr/local/bin/chromedriver'}
+    executable_path = {'executable_path': r'C:\Users\Admin\OneDrive\Desktop\Mission-to-Mars/chromedriver.exe'}
     browser = Browser('chrome', **executable_path, headless=True)
 
     news_title, news_paragraph = mars_news(browser)
@@ -56,21 +56,21 @@ def mars_news(browser):
     
     return news_title, news_p
 
-# Featured Images
+#Featured Images
 def featured_image(browser):
 
     # Visit URL
-    url = 'https://www.jpl.nasa.gov/spaceimages/?search=&category=Mars'
+    url = 'https://spaceimages-mars.com'
     browser.visit(url)
 
     # Find and click the full image button
-    full_image_elem = browser.find_by_id('full_image')[0]
+    full_image_elem = browser.find_by_tag('button')[1]
     full_image_elem.click()
 
     # Find the more info button and click that
-    browser.is_element_present_by_text('more info', wait_time=1)
-    more_info_elem = browser.links.find_by_partial_text('more info')
-    more_info_elem.click()
+    # browser.is_element_present_by_text('more info', wait_time=1)
+    # more_info_elem = browser.links.find_by_partial_text('more info')
+    # more_info_elem.click()
 
     # Parse the resulting html with soup
     html = browser.html
@@ -79,13 +79,14 @@ def featured_image(browser):
     # Add try/except for error handling
     try:
         # Find the relative image url
-        img_url_rel = img_soup.select_one('figure.lede a img').get("src")
+        img_url = img_soup.find('img', class_='fancybox-image').get('src')
 
     except AttributeError:
         return None
 
     # Use the base URL to create an absolute URL
-    img_url = f'https://www.jpl.nasa.gov{img_url_rel}'
+        #img_url_rel = img_soup.find('img', class_='fancybox-image').get('src')
+    img_url = 'https://spaceimages-mars.com/' + img_url
         
     return img_url
 
@@ -95,17 +96,16 @@ def mars_facts():
     # Add try/except for error handling
     try:
         # use 'read_html' to scrape the facts table into a dataframe
-        df = pd.read_html('http://space-facts.com/mars/')[0]
-    
+        df = pd.read_html('https://galaxyfacts-mars.com')[0]
     except BaseException:
         return None
     
     # Assign columns and set index of dataframe
-    df.columns = ['Description', 'Mars']
-    df.set_index('Description', inplace=True)
+    df.columns=['description', 'Mars', 'Earth']
+    df.set_index('description', inplace=True)
 
     # Convert dataframe into HTML format, add bootstrap
-    return df.to_html(classes="table table-striped")
+    return df.to_html(classes='table table-striped')
 
 def hemisphere_image(browser):
     
